@@ -30,6 +30,14 @@
 
 - The bastion certificate is now generated once at startup.
 
+- Added `-bastion-key` flag. The Ed25519 key used for authenticating with
+  bastion must now be configured separately, instead of the witness key being
+  reused for this. The program can be started and run with no bastion key
+  configured, but any attempted bastion connection will cause errors to be
+  logged. This means you must add `-bastion-key` flag to your litewitness
+  command-line -- but you may set it to the same key (fingerprint) as the
+  witness key.
+
 ### witnessctl
 
 - Added `set-bastions` command, which adds the given bastion(s) to every log

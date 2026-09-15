@@ -48,6 +48,7 @@ func main() {
 	var listenFlag = flag.String("listen", "localhost:7380", "address to listen for HTTP requests")
 	var noListenFlag = flag.Bool("no-listen", false, "do not open any listening socket, rely exclusively on bastions")
 	var keyFlag = flag.String("key", "", "SSH fingerprint (with SHA256: prefix) of the witness key")
+	var bastionKeyFlag = flag.String("bastion-key", "", "SSH fingerprint (with SHA256: prefix) of key for authenticating with bastions")
 	var testCertFlag = flag.Bool("testcert", false, "use rootCA.pem for connections to the bastion")
 	var obscurityFlag = flag.Bool("obscurity", false, "enable obscurity mode (disable / and /logz endpoints)")
 	var listenMetricsFlag = flag.String("listen-metrics", "", "address to listen for metrics requests, instead of exposing them on the main listener")
@@ -68,9 +69,9 @@ func main() {
 		}
 	})
 
-	signer := connectToSSHAgent(*sshAgentFlag, *keyFlag)
+	witnessSigner := connectToSSHAgent(*sshAgentFlag, *keyFlag)
 
-	w, err := witness.NewWitness(*dbFlag, *nameFlag, signer, slog.Default())
+	w, err := witness.NewWitness(*dbFlag, *nameFlag, witnessSigner, slog.Default())
 	if err != nil {
 		fatal("creating witness", "err", err)
 	}
@@ -129,7 +130,15 @@ func main() {
 	}
 	e := make(chan error, 1)
 
-	bastionSet := NewConnectionSet(bastionConnectFunc(signer, *testCertFlag, srv))
+	var bastionSet *ConnectionSet
+	if *bastionKeyFlag != "" {
+		bastionSigner := connectToSSHAgent(*sshAgentFlag, *bastionKeyFlag)
+		bastionSet = NewConnectionSet(bastionConnectFunc(bastionSigner, *testCertFlag, srv))
+		slog.Info("bastion key", "fingerprint", fmt.Sprintf("%x", sha256.Sum256(bastionSigner.Public().(ed25519.PublicKey))))
+	} else {
+		bastionSet = NewConnectionSet(bastionNoKeyConnectFunc())
+		slog.Info("no bastion key is configured, connections to bastions will not be possible")
+	}
 
 	// Handle log-specific bastions.
 	logBastions, err := w.AllBastions()
