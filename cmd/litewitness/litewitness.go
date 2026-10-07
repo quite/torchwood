@@ -29,8 +29,8 @@ import (
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 
-	"filippo.io/torchwood/internal/slogconsole"
-	"filippo.io/torchwood/internal/witness"
+	"github.com/quite/torchwood/internal/slogconsole"
+	"github.com/quite/torchwood/internal/witness"
 )
 
 func onSignal(signo os.Signal, callback func()) {

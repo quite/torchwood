@@ -29,7 +29,7 @@ import (
 	"time"
 
 	"filippo.io/torchwood/bastion"
-	"filippo.io/torchwood/internal/slogconsole"
+	"github.com/quite/torchwood/internal/slogconsole"
 	"golang.org/x/crypto/acme"
 	"golang.org/x/crypto/acme/autocert"
 	"golang.org/x/net/http2"

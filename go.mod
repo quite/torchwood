@@ -1,10 +1,11 @@
-module filippo.io/torchwood
+module github.com/quite/torchwood
 
 go 1.27.0
 
 require (
 	filippo.io/age v1.3.1
 	filippo.io/mostly-harmless/vrf-r255 v0.0.0-20260605095812-d3620d7874c5
+	filippo.io/torchwood v0.10.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/rogpeppe/go-internal v1.15.0
 	github.com/transparency-dev/tessera v1.0.2

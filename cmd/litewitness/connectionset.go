@@ -16,7 +16,7 @@ import (
 	"slices"
 	"time"
 
-	"filippo.io/torchwood/internal/witness"
+	"github.com/quite/torchwood/internal/witness"
 	"golang.org/x/net/http2"
 )
 
