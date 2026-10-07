@@ -14,7 +14,7 @@ import (
 	"time"
 
 	"filippo.io/torchwood"
-	"filippo.io/torchwood/internal/witness"
+	"github.com/quite/torchwood/internal/witness"
 	"golang.org/x/mod/sumdb/note"
 	sigsum "sigsum.org/sigsum-go/pkg/crypto"
 	"sigsum.org/sigsum-go/pkg/merkle"

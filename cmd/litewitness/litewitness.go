@@ -29,8 +29,8 @@ import (
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 
-	"filippo.io/torchwood/internal/slogconsole"
-	"filippo.io/torchwood/internal/witness"
+	"github.com/quite/torchwood/internal/slogconsole"
+	"github.com/quite/torchwood/internal/witness"
 )
 
 // https://www.iana.org/assignments/ssh-parameters
