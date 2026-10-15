@@ -14,6 +14,11 @@
 
 - Added support for ML-DSA-44 keys.
 
+- Added flag `-show-vkeys`. Given witness name and keys, output all
+  witness vkeys and corresponding SSH fingerprints in JSON format,
+  then exit. This is useful to get all canonical verifier keys used by
+  this witness, given its configuration.
+
 ### mpt
 
 - New package with a Merkle Patricia Trie implementation.

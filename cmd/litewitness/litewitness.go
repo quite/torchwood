@@ -7,6 +7,7 @@ import (
 	"crypto/mldsa"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -29,6 +30,7 @@ import (
 	"zombiezen.com/go/sqlite"
 	"zombiezen.com/go/sqlite/sqlitex"
 
+	"filippo.io/torchwood"
 	"filippo.io/torchwood/internal/slogconsole"
 	"filippo.io/torchwood/internal/witness"
 )
@@ -62,6 +64,7 @@ func main() {
 	var keyFlags stringSliceValue
 	flag.Var(&keyFlags, "key", "SSH fingerprint (with SHA256: prefix) of a witness key, Ed25519 or ML-DSA-44. Can be used several times.")
 	var bastionKeyFlag = flag.String("bastion-key", "", "SSH fingerprint (with SHA256: prefix) of key for authenticating with bastions")
+	var showVKeysFlag = flag.Bool("show-vkeys", false, "Given witness name and keys, output all witness vkeys and corresponding SSH fingerprints in JSON format, then exit")
 	var testCertFlag = flag.Bool("testcert", false, "use rootCA.pem for connections to the bastion")
 	var obscurityFlag = flag.Bool("obscurity", false, "enable obscurity mode (disable / and /logz endpoints)")
 	var listenMetricsFlag = flag.String("listen-metrics", "", "address to listen for metrics requests, instead of exposing them on the main listener")
@@ -89,6 +92,11 @@ func main() {
 	})
 
 	bastionSigner, signers := connectToSSHAgent(*sshAgentFlag, *bastionKeyFlag, keyFlags)
+
+	if *showVKeysFlag {
+		showVKeys(*nameFlag, signers)
+		os.Exit(0)
+	}
 
 	cryptoSigners := make([]crypto.Signer, len(signers))
 	for i, s := range signers {
@@ -335,6 +343,41 @@ func (s *signer) Sign(rand io.Reader, data []byte, opts crypto.SignerOpts) (sign
 		return nil, err
 	}
 	return sig.Blob, nil
+}
+
+func showVKeys(name string, signers []*signer) {
+	type key struct {
+		Type           string `json:"type"`
+		SSHFingerprint string `json:"sshfingerprint"`
+		VKey           string `json:"vkey"`
+	}
+
+	keys := make([]key, len(signers))
+	for i := range signers {
+		s, err := torchwood.NewCosignatureSigner(name, signers[i])
+		if err != nil {
+			fatal("preparing signer", "err", err)
+		}
+		keys[i] = key{
+			Type:           signers[i].s.PublicKey().Type(),
+			SSHFingerprint: ssh.FingerprintSHA256(signers[i].s.PublicKey()),
+			VKey:           s.Verifier().String(),
+		}
+	}
+
+	json, err := json.Marshal(struct {
+		Name string `json:"name"`
+		Keys []key  `json:"keys"`
+	}{
+		Name: name,
+		Keys: keys,
+	})
+	if err != nil {
+		fatal("marshal json vkeys", "err", err)
+	}
+
+	fmt.Printf("%s\n", json)
+
 }
 
 const indexHeader = `
