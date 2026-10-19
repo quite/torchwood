@@ -33,6 +33,9 @@ import (
 	"filippo.io/torchwood/internal/witness"
 )
 
+// Defined to avoid bumping golang.org/x/crypto to v0.58.0
+const sshKeyAlgoMLDSA44 = "ssh-mldsa-44"
+
 func onSignal(signo os.Signal, callback func()) {
 	c := make(chan os.Signal, 1)
 	signal.Notify(c, signo)
@@ -234,7 +237,7 @@ func connectToSSHAgent(sshAgent string, bastionKey string, witnessKeys []string)
 			hh := sha256.Sum256(signer.Public().(ed25519.PublicKey))
 			h := hex.EncodeToString(hh[:])
 			usableSigners[h] = signer
-		case ssh.KeyAlgoMLDSA44:
+		case sshKeyAlgoMLDSA44:
 			signer, err := newMLDSA44Signer(s)
 			if err != nil {
 				fatal("newMLDSA44Signer", "err", err)
